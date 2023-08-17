@@ -25,8 +25,6 @@ const Main = () => {
         getProducts()
             .then((resultProducts) => {
                 setProducts(resultProducts.products);
-                setCategories([...new Set(products.map(product => product.category))]);
-
             })
 
     }, [])
