@@ -35,6 +35,7 @@ const Main = () => {
         setCategories([...new Set(products.map(product => product.category))]);
     }, [products])
 
+    // form submit handler
     const handleSubmit = (e) => {
         e.preventDefault();
 

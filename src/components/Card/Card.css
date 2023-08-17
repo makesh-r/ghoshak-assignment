@@ -16,7 +16,7 @@
 .card__image img{
     height: 200px;
     width: 300px;
-    object-fit: scale-down;
+    object-fit: cover;
     margin: 0;
 }
 
