@@ -1,37 +1,37 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 import Card from './Card/Card';
 import "./Main.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 
 import { getProducts } from '../apis/ProductApi';
+import { productsActions, productsInitialState, productsReducer } from '../reducer/ProductReducer';
 
 
 const Main = () => {
 
-    const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
 
-    const [searchedProducts, setSearchedProducts] = useState([]);
+    const [{searchedProducts, categories}, productsDispatch] = useReducer(productsReducer, productsInitialState);
 
     const [price, setPrice] = useState("");
     const [category, setCategory] = useState("");
-    const [error, setError] = useState(false);
-    const inputRef = useRef();
 
 
     useEffect(() => {
-        inputRef.current.focus();
         getProducts()
-            .then((resultProducts) => {
-                setProducts(resultProducts.products);
+            .then((result) => {
+                productsDispatch({
+                    type:productsActions.GET_ALL_PRODUCTS,
+                    items:result.products
+                })
+
+                productsDispatch({
+                    type: productsActions.GET_CATOGORIES,
+                })
             })
 
     }, [])
 
-    useEffect(() => {
-        setCategories([...new Set(products.map(product => product.category))]);
-    }, [products])
 
     // form submit handler
     const handleSubmit = (e) => {
@@ -41,19 +41,19 @@ const Main = () => {
             alert("Please select a category and price.")
         }
         else {
-            const arr = products.filter(
-                (item) => item.price >= price && item.category === category
-            );
-            arr.length === 0 ? setError(true) : setError(false)
-            setSearchedProducts(arr);
+            productsDispatch({
+                type: productsActions.SEARCH_PRODUCTS,
+                price: price,
+                category: category
+            })
 
             setCategory("");
             setPrice("");
         }
 
 
-
     }
+
 
     return (
         <div className="main">
@@ -71,7 +71,7 @@ const Main = () => {
                             )
                         }
                     </select>
-                    <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="form__input" placeholder="Enter price to search" ref={inputRef} />
+                    <input type="number" autoFocus value={price} onChange={(e) => setPrice(e.target.value)} className="form__input" placeholder="Enter price to search" />
                     <button type="submit" className="form__button">
                         <FontAwesomeIcon icon={faMagnifyingGlass} />
                     </button>
@@ -81,7 +81,7 @@ const Main = () => {
             <div className="main__body">
 
                 {
-                    searchedProducts &&
+                    searchedProducts.length > 0 ?
                     searchedProducts.map(
                         (item) => {
                             return (
@@ -91,14 +91,13 @@ const Main = () => {
                                 />
                             )
                         }
-                    )   
-                }
-                {
-                    error && 
+                    ) 
+                    :
                     <div className="error">
                         <p>No products in the selected category that are above the entered price.</p>
                     </div>
                 }
+
             </div>
         </div>
     )
